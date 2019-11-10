@@ -41,38 +41,111 @@ export let html = htm.bind(h)
 // The idea is that the start callback will be an asynchronous process
 // (async/await) that continually updates the process element with
 // new content.
-//
-// Note that the asynchronous process will hold a reference to the DOM
-// node.  If the DOM node is removed from the document and the process
-// keeps running, this is likely a resource leak.  Weak references are
-// coming to browsers soon...
-//
-export let spawn = (name, start, args) => {
+export let spawn = ({
+  name, start, link, args = {}
+}) => {
   let self = html`<process name=${name}/>`
+  let quit = channel()
+  let exit = channel()
 
-  start({
-    ...args,
-    draw: node => {
+  self.quit = quit; self.exit = exit
+
+  let draw = node => {
+    while (self.hasChildNodes())
+      self.removeChild(self.lastChild)
+    try {
+      self.appendChild(node)
+    } catch (e) {
+      console.error(name, start, self, node)
+      throw e
+    }
+  }
+
+  let run = async () => {
+    try {
+      let x = await start({ 
+        ...args, quit, exit, draw, self
+      })
+      console.log(`${name}: returned`)
+      exit.push(x)
+    } catch (e) {
+      console.log(`${name}: crash ${e}`)
+      if (link) {
+        console.log(`${name}: quitting link`)
+        link.quit.push(e)
+      }
+      exit.push(e)
+    } finally {
+      console.log(`${name}: clearing`)
       while (self.hasChildNodes())
         self.removeChild(self.lastChild)
-      try {
-        self.appendChild(node)
-      } catch (e) {
-        console.error(name, start, self, node)
-        throw e
-      }
     }
-  })
+  }
+
+  run()
 
   return self
+}
+
+export let supervise = ({ 
+  name, start, args = {} 
+}) => {
+
+  let supervisor = async ({ draw, quit, exit }) => {
+    loop: while (true) {
+      console.log(`supervisor ${name}: starting`)
+      let child = spawn({ name, start, args })
+      draw(child)
+
+      switch (await choose([
+        label(next(quit), "quit self"),
+        label(next(child.exit), "exit child"),
+      ])) {
+      case "quit self":
+        console.log("quit self")
+        child.quit.push("quit")
+        await next(child.exit)
+        break loop
+      case "exit child":
+        console.log("exit child")
+        await sleep(1)
+        continue loop
+      default:
+        console.log("uh")
+      }
+    }
+  }
+
+  return spawn({ 
+    name: "Supervisor: ${name}", 
+    start: supervisor
+  })
 }
 
 export let channel = () => {
   let subscriber = () => {}
   return ({
-    pull: f => subscriber = f,
-    push: x => subscriber(x)
+    pull: f => {
+      subscriber = f
+    },
+    push: x => {
+      console.log("push", x)
+      subscriber(x)
+    }
   })
+}
+
+export let preemptive = async (self, xs) => {
+  let fail = Symbol("fail")
+  let x = await choose([
+    label(next(self.quit), fail),
+    ...xs
+  ])
+  
+  if (x === fail)
+    throw new Error("quit")
+  else
+    return x
 }
 
 export let next =

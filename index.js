@@ -1,18 +1,24 @@
-import { html, spawn, channel, next, choose, label, sleep } 
-  from './proact.js'
+import { 
+  html, spawn, supervise, 
+  channel, next, preemptive, choose, label, 
+  sleep 
+} from './proact.js'
 
 let button = ({ text, value = text }) => {
   let click = channel()
   return {
     click, 
-    node: spawn(text,
-      async ({ draw }) =>
+    node: spawn({
+      name: text,
+      start: async ({ draw, quit }) => {
         draw(html`
          <button onclick=${() => click.push(value)}>
            ${text}
          </button>
        `)
-    )
+        await next(quit)
+      }
+    })
   }
 }
 
@@ -21,6 +27,9 @@ let Clock = async ({ draw, start, pause }) => {
 
   let i = 0
   while (true) {
+    if (i > 20)
+      throw new Error("Crash!")
+    
     draw(html`<span>${(i / 10.0).toString()}</span>`)
     switch (await choose([
       label(sleep(0.1), "slept"),
@@ -34,14 +43,19 @@ let Clock = async ({ draw, start, pause }) => {
   }
 }
 
-let Stopwatch = async ({ draw }) => {
+let Stopwatch = async ({ draw, self }) => {
   let start = button({ text: "Start" })
   let pause = button({ text: "Pause" })
 
   let running = false
-  let clock = spawn("clock", Clock, { 
-    start: start.click,
-    pause: pause.click,
+  let clock = spawn({
+    name: "clock", 
+    start: Clock,
+    link: self,
+    args: { 
+      start: start.click,
+      pause: pause.click,
+    }
   })
   
   while (true) {
@@ -52,7 +66,7 @@ let Stopwatch = async ({ draw }) => {
         ${pause.node}
       </stopwatch>
     `)
-    await sleep(60)
+    await preemptive(self, [sleep(60)])
   }
 }
 
@@ -91,8 +105,8 @@ let Game = async ({ draw }) => {
   await Flash({ draw, text: "Three!" })
   
   if (await YesOrNo({ draw, question: "Show some stopwatches?" })) {
-    let w1 = spawn("Watch 1", Stopwatch)
-    let w2 = spawn("Watch 2", Stopwatch)
+    let w1 = supervise({ name: "Watch 1", start: Stopwatch })
+    let w2 = supervise({ name: "Watch 2", start: Stopwatch })
     draw(html`
      <div>
        <section>
@@ -108,8 +122,10 @@ let Game = async ({ draw }) => {
   } else
     draw(html`<p>Fine.</p>`)
 
-  await sleep(60)
+  await sleep(600)
   draw(html`<p>Time's up!</p>`)
 }
 
-document.body.appendChild(spawn("game", Game))
+document.body.appendChild(
+  spawn({ name: "Game", start: Game })
+)
