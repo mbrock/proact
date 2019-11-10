@@ -1,0 +1,37 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, button { font: 22px/32px helvetica; }
+
+h1 { font-size: inherit; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  justify-content: center;
+  align-items: center;
+}
+
+dialog {
+  position: inherit;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10em black;
+}
+
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+dialog nav {
+  display: flex;
+  justify-content: space-between;
+}
+
+stopwatch span {
+  width: 8em;
+  display: inline-block;
+}
