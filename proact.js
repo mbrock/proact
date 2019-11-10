@@ -48,8 +48,6 @@ export let spawn = ({
   let quit = channel()
   let exit = channel()
 
-  self.quit = quit; self.exit = exit
-
   let draw = node => {
     while (self.hasChildNodes())
       self.removeChild(self.lastChild)
@@ -61,11 +59,13 @@ export let spawn = ({
     }
   }
 
+  self.quit = quit
+  self.exit = exit
+  self.draw = draw
+
   let run = async () => {
     try {
-      let x = await start({ 
-        ...args, quit, exit, draw, self
-      })
+      let x = await start(self, args)
       console.log(`${name}: returned`)
       exit.push(x)
     } catch (e) {
@@ -91,14 +91,14 @@ export let supervise = ({
   name, start, args = {} 
 }) => {
 
-  let supervisor = async ({ draw, quit, exit }) => {
+  let supervisor = async self => {
     loop: while (true) {
       console.log(`supervisor ${name}: starting`)
       let child = spawn({ name, start, args })
-      draw(child)
+      self.draw(child)
 
       switch (await choose([
-        label(next(quit), "quit self"),
+        label(next(self.quit), "quit self"),
         label(next(child.exit), "exit child"),
       ])) {
       case "quit self":

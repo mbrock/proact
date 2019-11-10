@@ -10,19 +10,19 @@ let button = ({ text, value = text }) => {
     click, 
     node: spawn({
       name: text,
-      start: async ({ draw, quit }) => {
-        draw(html`
+      start: async self => {
+        self.draw(html`
          <button onclick=${() => click.push(value)}>
            ${text}
          </button>
        `)
-        await next(quit)
+        await next(self.quit)
       }
     })
   }
 }
 
-let Clock = async ({ draw, start, pause }) => {
+let Clock = async (self, { start, pause }) => {
   await next(start)
 
   let i = 0
@@ -30,7 +30,7 @@ let Clock = async ({ draw, start, pause }) => {
     if (i > 20)
       throw new Error("Crash!")
     
-    draw(html`<span>${(i / 10.0).toString()}</span>`)
+    self.draw(html`<span>${(i / 10.0).toString()}</span>`)
     switch (await choose([
       label(sleep(0.1), "slept"),
       label(next(pause), "paused"),
@@ -43,7 +43,7 @@ let Clock = async ({ draw, start, pause }) => {
   }
 }
 
-let Stopwatch = async ({ draw, self }) => {
+let Stopwatch = async self => {
   let start = button({ text: "Start" })
   let pause = button({ text: "Pause" })
 
@@ -59,7 +59,7 @@ let Stopwatch = async ({ draw, self }) => {
   })
   
   while (true) {
-    draw(html`
+    self.draw(html`
       <stopwatch>
         ${clock}
         ${start.node}
@@ -70,12 +70,12 @@ let Stopwatch = async ({ draw, self }) => {
   }
 }
 
-let Modal = async ({ draw, title, actions }) => {
+let Modal = async (self, { title, actions }) => {
   let buttons = Object.entries(actions).map(
     ([k, v]) => button({ text: k, value: v })
   )
 
-  draw(html`
+  self.draw(html`
     <dialog open>
       <h1>${title}</h1>
       <nav>
@@ -87,27 +87,26 @@ let Modal = async ({ draw, title, actions }) => {
   return await choose(buttons.map(x => next(x.click)))
 }
 
-let YesOrNo = async ({ draw, question }) =>
-  await Modal({ 
-    draw, 
+let YesOrNo = async (self, { question }) =>
+  await Modal(self, { 
     title: question, 
     actions: { Yes: true, No: false } 
   })
   
-let Flash = async ({ draw, text }) => {
-  draw(html`<p>${text}</p>`)
+let Flash = async (self, { text }) => {
+  self.draw(html`<p>${text}</p>`)
   await sleep(0.5)
 }
 
-let Game = async ({ draw }) => {
-  await Flash({ draw, text: "One!" })
-  await Flash({ draw, text: "Two!" })
-  await Flash({ draw, text: "Three!" })
+let Game = async self => {
+  await Flash(self, { text: "One!" })
+  await Flash(self, { text: "Two!" })
+  await Flash(self, { text: "Three!" })
   
-  if (await YesOrNo({ draw, question: "Show some stopwatches?" })) {
+  if (await YesOrNo(self, { question: "Show some stopwatches?" })) {
     let w1 = supervise({ name: "Watch 1", start: Stopwatch })
     let w2 = supervise({ name: "Watch 2", start: Stopwatch })
-    draw(html`
+    self.draw(html`
      <div>
        <section>
          <header>Watch 1</header>
@@ -120,10 +119,10 @@ let Game = async ({ draw }) => {
      </div>
     `)
   } else
-    draw(html`<p>Fine.</p>`)
+    self.draw(html`<p>Fine.</p>`)
 
   await sleep(600)
-  draw(html`<p>Time's up!</p>`)
+  self.draw(html`<p>Time's up!</p>`)
 }
 
 document.body.appendChild(
