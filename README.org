@@ -55,4 +55,19 @@
    themselves are not interactive but have their input and
    output connected to a system which is interactive overall.
 
-
+   Some characteristics of interactive programs:
+   
+     - Most of the time, they are responsive to requests from
+       the user, through inputs like buttons, forms, or various
+       mouse-based interactions.
+       
+     - They are also often listening for incoming information
+       outside of the user's direct control, from network
+       devices or other sensors.
+       
+     - They can have complex structures of interaction which
+       involve guided tutorials, multiplexed documents and tabs,
+       overlapping subwindows, bidirectional calculations,
+       physical simulations, etc.
+       
+   
