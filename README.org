@@ -13,6 +13,11 @@
   try to get away from what Proact tries to embrace:
   concurrently sequential code.
 
+** Some questions and todos
+
+     - [ ] Figure out correct behavior of quit/exit,
+       bidirectional links, etc
+
 ** Sequential code
 
    When writing sequential code, we define computational
