@@ -1,0 +1,37 @@
+Some notes about semantics and stuff.
+
+*** Semantics
+
+    In programming language theory, there are two main styles
+    for defining the semantics of a language, that is, defining
+    exactly how it is to be interpreted or executed.  There are
+    /operational semantics/ and /denotational semantics/.
+
+    In both styles, we typically begin by defining the language
+    as a nested symbolic structure, then we define some
+    computational rules of inference that apply to this
+    structure.  
+
+    Footnote: Linguists also do this; they try to define the
+    semantics of natural language structures by mapping them
+    into systems of formal logic.
+
+    In operational semantics, the inference rules specify state
+    transitions of some type of "machine."  Evaluation is
+    thought of as iteratively applying transition rules on some
+    initial state until the state applies some exit criterion.
+
+    In denotational semantics, the inference rules specify how
+    the program's syntactic structure is recursively translated
+    into some value in another mathematical domain.
+
+    These styles of formal semantics can be applied to different
+    styles of real programming languages or theoretical
+    programming formalisms.
+
+*** Monads
+
+    In Haskell, the `do` syntax (and the `Monad` structure)
+    provides a clear and simple version of the sequential
+    paradigm boiled down to its essence: defining an ordered
+    sequence of computations with data dependencies.

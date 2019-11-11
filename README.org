@@ -15,8 +15,8 @@
 
 ** Some questions and todos
 
-     - [ ] Figure out correct behavior of quit/exit,
-       bidirectional links, etc
+     - Figure out correct behavior of quit/exit, bidirectional
+       links, etc
 
 ** Sequential code
 
