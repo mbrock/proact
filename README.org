@@ -1,7 +1,7 @@
 * Proact
 
   *Proact* is an experiment about coding interactive web apps
-  in a particular style enabled by the new `await` keyword in
+  in a particular style enabled by the new =await= keyword in
   JavaScript and a simple library that treats JavaScript's
   cooperative fibers as message-passing user interface processes
   that control their own HTML subtrees.
