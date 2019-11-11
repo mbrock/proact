@@ -1,0 +1,58 @@
+* Proact
+
+  **Proact** is an experiment about coding interactive web apps
+  in a particular style enabled by the new `await` keyword in
+  JavaScript and a simple library that treats JavaScript's
+  cooperative fibers as message-passing user interface processes
+  that control their own HTML subtrees.
+
+  I'm not sure whether there are other similar experiments.
+  The popular user interface libraries today either focus on
+  explicit state machines or declarative/reactive data binding.
+  These are both ways to deal with concurrency and state that
+  try to get away from what Proact tries to embrace:
+  concurrently sequential code.
+
+** Sequential code
+
+   When writing sequential code, we define computational
+   processes as sequences of statements in control structures
+   like loops and conditionals, with data flow based on
+   assigning to mutable variables.
+
+   This style is accused of serious problems and is seen in some
+   circles as a crude legacy, but it's hard to really get away
+   from and it currently seems somewhat underappreciated.
+   
+   Sequential coding is discussed as a necessity of the reality
+   of "low-level" Turing-style machines, to be transcended
+   through /denotative/ programming based on an expression
+   calculus.  This transcendence is a thorny research project
+   yielding fascinating fruits, but in day-to-day programming,
+   sequential code remains the norm.
+
+   We suspect that sequential programming might be fundamentally
+   nice especially for certain "high levels" of programming.
+   User-written scripts are called /scripts/ because of their
+   straightforward sequentiality.  A shell script is a sequence
+   of shell commands: a transcript of a user's commands to
+   perform a certain task.
+
+** Interactivity
+
+   Interactive programs have certain challenges compared to both
+   sequential scripts and denotative mathematical functions.
+   But these categories are not completely distinct.  They are
+   more like aspects that always intertwine in real code.
+
+   A user script is necessarily interactive when it interacts
+   with disk storage, network protocols, and operating system
+   facilities.  These all present sources of /nondeterminism/
+   and /interruption/ for the script, even if only in the form
+   of unexpected errors.
+
+   A user script may use mathematical expressions that in
+   themselves are not interactive but have their input and
+   output connected to a system which is interactive overall.
+
+
