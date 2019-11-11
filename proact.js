@@ -34,6 +34,14 @@ let h = (type, attrs, ...children) => {
 // See https://github.com/developit/htm for usage.
 export let html = htm.bind(h)
 
+class ProcessError extends Error {
+  constructor(self, message, cause = null) {
+    super(`Error in process "${self.name}": ${message}`)
+    this.self = self
+    this.cause = cause
+  }
+}
+
 // spawn() just creates a mutable DOM element, let's call it a
 // "process element," and runs the given start callback with a draw
 // function that mutates the process element.
@@ -51,14 +59,10 @@ export let spawn = ({
   let draw = node => {
     while (self.hasChildNodes())
       self.removeChild(self.lastChild)
-    try {
-      self.appendChild(node)
-    } catch (e) {
-      console.error(name, start, self, node)
-      throw e
-    }
+    self.appendChild(node)
   }
 
+  self.name = name
   self.quit = quit
   self.exit = exit
   self.draw = draw
@@ -67,18 +71,17 @@ export let spawn = ({
     try {
       let x = await start(self, args)
       console.log(`${name}: returned`)
-      exit.push(x)
+      exit.push({ ok: x })
     } catch (e) {
       console.log(`${name}: crash ${e}`)
       if (link) {
-        console.log(`${name}: quitting link`)
-        link.quit.push(e)
+        console.log(`${name}: sending quit to ${link.name}`)
+        link.quit.push({ fail: e, from: self })
       }
-      exit.push(e)
+      exit.push({ fail: e })
     } finally {
-      console.log(`${name}: clearing`)
-      while (self.hasChildNodes())
-        self.removeChild(self.lastChild)
+      console.log(`${name}: removing`)
+      self.remove()
     }
   }
 
@@ -97,21 +100,24 @@ export let supervise = ({
       let child = spawn({ name, start, args })
       self.draw(child)
 
-      switch (await choose([
+      switch (await select([
         label(next(self.quit), "quit self"),
-        label(next(child.exit), "exit child"),
+        label(next(child.exit), "exit child"), 
       ])) {
       case "quit self":
-        console.log("quit self")
         child.quit.push("quit")
         await next(child.exit)
         break loop
       case "exit child":
-        console.log("exit child")
-        await sleep(1)
+        for (let i = 3; i > 0; i--) {
+          self.draw(html`
+            <supervisor>
+              Restarting in ${i.toString()}...
+            </supervisor>
+          `)
+          await sleep(1)
+        }
         continue loop
-      default:
-        console.log("uh")
       }
     }
   }
@@ -137,7 +143,7 @@ export let channel = () => {
 
 export let preemptive = async (self, xs) => {
   let fail = Symbol("fail")
-  let x = await choose([
+  let x = await select([
     label(next(self.quit), fail),
     ...xs
   ])
@@ -151,7 +157,7 @@ export let preemptive = async (self, xs) => {
 export let next =
   channel => new Promise((ok, _) => channel.pull(ok))
 
-export let choose =
+export let select =
   async choices => Promise.race(choices)
 
 export let label =

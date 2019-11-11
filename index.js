@@ -1,6 +1,6 @@
 import { 
   html, spawn, supervise, 
-  channel, next, preemptive, choose, label, 
+  channel, next, preemptive, select, label, 
   sleep 
 } from './proact.js'
 
@@ -31,7 +31,7 @@ let Clock = async (self, { start, pause }) => {
       throw new Error("Crash!")
     
     self.draw(html`<span>${(i / 10.0).toString()}</span>`)
-    switch (await choose([
+    switch (await select([
       label(sleep(0.1), "slept"),
       label(next(pause), "paused"),
     ])) {
@@ -84,7 +84,7 @@ let Modal = async (self, { title, actions }) => {
     </dialog>
   `)
   
-  return await choose(buttons.map(x => next(x.click)))
+  return await select(buttons.map(x => next(x.click)))
 }
 
 let YesOrNo = async (self, { question }) =>
