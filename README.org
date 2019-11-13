@@ -1,22 +1,42 @@
 * Proact
 
-  *Proact* is an experiment about coding interactive web apps
-  in a particular style enabled by the new =await= keyword in
-  JavaScript and a simple library that treats JavaScript's
-  cooperative fibers as message-passing user interface processes
-  that control their own HTML subtrees.
+  *Proact* is a small JavaScript library that helps you write
+  web browser programs in a style that treats interactive
+  elements as concurrent threads of execution with passing
+  messages through channels.
 
-  I'm not sure whether there are other similar experiments.
-  The popular user interface libraries today either focus on
-  explicit state machines or declarative/reactive data binding.
-  These are both ways to deal with concurrency and state that
-  try to get away from what Proact tries to embrace:
-  concurrently sequential code.
+  There are different ways to program user interfaces.
 
-** Some questions and todos
+  It's common to use an event-driven "nested state machine"
+  style. Facebook's React library is often used like this.
+  The contents of the user interface at any point in time is
+  defined by the return value of a rendering function that
+  turns an app-defined state structure into an HTML structure.
+  Local zones of state are defined by component boundaries
+  coded as classes; these have their own render functions and
+  their state roots can be updated independently.
 
-     - Figure out correct behavior of quit/exit, bidirectional
-       links, etc
+  The other common style is an initializing script that
+  configures a mess of callbacks that update the HTML document
+  in ad hoc ways.
+
+  With Proact, we define what can be thought of as a
+  cooperatively concurrent system of nested processes, some of
+  which control HTML nodes.  The process functions can
+  explicitly wait for events, including receiving events sent
+  to them by other processes.
+
+  Failures are propagated through the process hierarchy.
+  There are supervising processes that can reset and restart
+  their child processes when they fail.  Bugs happen, and if
+  the application is split along the seams of the program's
+  actual concurrency, we get a natural approach to failure:
+  one component crashing leaves the rest of the system running
+  while the context surrounding the crash is restarted.
+
+  If you're familiar with Erlang, you can imagine an Erlang
+  process hierarchy where some processes are controlling some
+  subtree of an HTML document.
 
 ** Sequential code
 
@@ -25,30 +45,31 @@
    like loops and conditionals, with data flow based on
    assigning to mutable variables.
 
-   This style is accused of serious problems and is seen in some
-   circles as a crude legacy, but it's hard to really get away
-   from and it currently seems somewhat underappreciated.
+   This style is accused of serious problems and is seen in
+   some circles as a crude legacy, but it's hard to really get
+   away from and it currently seems somewhat underappreciated.
    
-   Sequential coding is discussed as a necessity of the reality
-   of "low-level" Turing-style machines, to be transcended
-   through /denotative/ programming based on an expression
-   calculus.  This transcendence is a thorny research project
-   yielding fascinating fruits, but in day-to-day programming,
-   sequential code remains the norm.
+   Sequential coding is discussed as a necessity of the
+   reality of "low-level" Turing-style machines, to be
+   transcended through /denotative/ programming based on an
+   expression calculus.  This transcendence is a thorny
+   research project yielding fascinating fruits, but in
+   day-to-day programming, sequential code remains the norm.
 
-   We suspect that sequential programming might be fundamentally
-   nice especially for certain "high levels" of programming.
-   User-written scripts are called /scripts/ because of their
-   straightforward sequentiality.  A shell script is a sequence
-   of shell commands: a transcript of a user's commands to
-   perform a certain task.
+   We suspect that sequential programming might be
+   fundamentally nice especially for certain "high levels" of
+   programming.  User-written scripts are called /scripts/
+   because of their straightforward sequentiality.  A shell
+   script is a sequence of shell commands: a transcript of a
+   user's commands to perform a certain task.
 
 ** Interactivity
 
-   Interactive programs have certain challenges compared to both
-   sequential scripts and denotative mathematical functions.
-   But these categories are not completely distinct.  They are
-   more like aspects that always intertwine in real code.
+   Interactive programs have certain challenges compared to
+   both sequential scripts and denotative mathematical
+   functions.  But these categories are not completely
+   distinct.  They are more like aspects that always
+   intertwine in real code.
 
    A user script is necessarily interactive when it interacts
    with disk storage, network protocols, and operating system
@@ -75,4 +96,5 @@
        overlapping subwindows, bidirectional calculations,
        physical simulations, etc.
        
+   
    

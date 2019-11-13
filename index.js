@@ -9,7 +9,7 @@ let button = ({ text, value = text }) => {
   return {
     click, 
     node: spawn({
-      name: text,
+      name: `Button (${text})`,
       start: async self => {
         self.draw(html`
          <button onclick=${() => click.push(value)}>
