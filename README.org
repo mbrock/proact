@@ -2,8 +2,8 @@
 
   *Proact* is a small JavaScript library that helps you write
   web browser programs in a style that treats interactive
-  elements as concurrent threads of execution with passing
-  messages through channels.
+  elements as concurrent threads of execution passing messages
+  through channels.
 
   There are different ways to program user interfaces.
 
